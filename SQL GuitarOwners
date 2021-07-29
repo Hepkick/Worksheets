@@ -1,0 +1,162 @@
+USE GuitarOwnership;
+SELECT first_name, last_name 
+    FROM Owners 
+    ORDER BY last_name ASC, first_name ASC;
+    
+SELECT first_name, last_name 
+    FROM Owners 
+    WHERE birthdate < '1970-01-01' 
+    ORDER BY last_name ASC, first_name ASC;
+
+SELECT CURDATE();
+SELECT first_name, last_name 
+    FROM Owners 
+    WHERE TIMESTAMPDIFF(YEAR, birthdate, CURDATE()) > 40;
+    
+SELECT first_name, 
+       last_name, 
+       TIMESTAMPDIFF(YEAR, birthdate, CURDATE()) AS Age 
+          FROM Owners 
+          WHERE TIMESTAMPDIFF(YEAR, birthdate, CURDATE()) > 40;
+          
+SELECT COUNT(*) FROM Owners;
+SELECT COUNT(DISTINCT owner_id) FROM CustomerGuitar;
+
+SELECT 
+    (SELECT COUNT(*) FROM Owners) - 
+    (SELECT COUNT(DISTINCT owner_id) 
+        FROM CustomerGuitar);
+        
+SELECT COUNT(*) FROM Owners AS O
+  LEFT OUTER JOIN CustomerGuitar AS CG
+    ON
+      O.owner_id = CG.owner_id
+  WHERE CG.owner_id IS NULL;
+  
+SELECT 
+    O.first_name,
+    O.last_name,
+    SUM(CG.price) AS money_spent 
+        FROM Owners AS O 
+            INNER JOIN CustomerGuitar AS CG 
+                ON O.owner_id=CG.owner_id 
+    GROUP BY O.owner_id, O.first_name, O.last_name;
+    
+SELECT 
+    O.first_name,
+    O.last_name,
+    SUM(CG.price) AS money_spent 
+        FROM Owners AS O 
+            INNER JOIN CustomerGuitar AS CG 
+                ON O.owner_id=CG.owner_id 
+    GROUP BY O.owner_id, O.first_name, O.last_name
+    ORDER BY money_spent DESC;
+    
+SELECT 
+  O.first_name, 
+  O.last_name, 
+  Ma.manufacturer_name, 
+  M.model_name, 
+  GT.guitar_type, 
+  CG.price FROM Owners AS O 
+    INNER JOIN CustomerGuitar AS CG
+      ON O.owner_id=CG.owner_id
+    INNER JOIN Guitars AS G
+      ON CG.guitar_id=G.guitar_id
+    INNER JOIN Models AS M
+      ON G.model_name = M.model_name
+    INNER JOIN Manufacturers AS Ma
+      ON M.manufacturer_id = Ma.manufacturer_id
+    INNER JOIN Guitar_Types AS GT
+        ON GT.guitar_type_id = M.guitar_type_id;
+        
+SELECT 
+  Ma.manufacturer_name, 
+  M.model_name, 
+  GT.guitar_type, 
+  CG.price FROM CustomerGuitar AS CG
+    INNER JOIN Guitars AS G
+      ON CG.guitar_id=G.guitar_id
+    INNER JOIN Models AS M
+      ON G.model_name = M.model_name
+    INNER JOIN Manufacturers AS Ma
+      ON M.manufacturer_id = Ma.manufacturer_id
+    INNER JOIN Guitar_Types AS GT
+        ON GT.guitar_type_id = M.guitar_type_id;
+        
+SELECT 
+  D.dealer,
+  D.dealer_city,
+  SUM(CG.price) as total_paid
+    FROM CustomerGuitar AS CG
+      INNER JOIN Dealers AS D
+        ON D.dealer_id=CG.dealer_id
+    GROUP BY D.dealer_id;
+    
+SELECT
+  M.model_name,
+  AVG(CG.price) AS average_price
+  FROM CustomerGuitar AS CG
+    INNER JOIN Guitars AS G
+      ON CG.guitar_id=G.guitar_id
+    INNER JOIN Models AS M
+      ON G.model_name=M.model_name
+    GROUP BY M.model_name;
+    
+SELECT Owner_id  
+    FROM Owners 
+    WHERE TIMESTAMPDIFF(YEAR, birthdate, CURDATE()) = 
+    (SELECT MIN(TIMESTAMPDIFF(YEAR, birthdate, CURDATE())) 
+    FROM Owners);
+
+SELECT Owner_id  
+    FROM Owners
+    WHERE birthdate = (SELECT MAX(birthdate) FROM Owners);
+    
+SELECT 
+  O.first_name,
+  O.last_name,
+  TIMESTAMPDIFF(YEAR, O.birthdate, CURDATE()) AS Age,
+  M.model_name
+    FROM Owners AS O
+     INNER JOIN CustomerGuitar AS CG
+        ON O.owner_id=CG.owner_id
+      INNER JOIN Guitars AS G
+        ON CG.guitar_id=G.guitar_id
+      INNER JOIN Models AS M
+        ON G.model_name = M.model_name
+    WHERE O.owner_id = 
+    (SELECT Owner_id  FROM Owners WHERE birthdate = 
+    (SELECT MAX(birthdate) FROM Owners));
+SELECT 
+  M.model_name, 
+  CG.price FROM CustomerGuitar AS CG
+    INNER JOIN Guitars AS G
+      ON CG.guitar_id=G.guitar_id
+    INNER JOIN Models AS M
+      ON G.model_name = M.model_name;
+      
+SELECT 
+  M.model_name, 
+  CG.price FROM CustomerGuitar AS CG
+    INNER JOIN Guitars AS G
+      ON CG.guitar_id=G.guitar_id
+    INNER JOIN Models AS M
+      ON G.model_name = M.model_name
+    ORDER BY M.model_name ASC, CG.price DESC;
+    
+SELECT 
+  M.model_name, 
+  CG.price FROM CustomerGuitar AS CG
+    INNER JOIN Guitars AS G
+      ON CG.guitar_id=G.guitar_id
+    INNER JOIN Models AS M
+      ON G.model_name = M.model_name
+    WHERE CG.price = 
+        (SELECT MAX(CG1.price) 
+          FROM CustomerGuitar AS CG1
+            INNER JOIN Guitars AS G1
+              ON CG1.guitar_id=G1.Guitar_id
+            INNER JOIN Models AS M1
+              ON M1.model_name=G1.model_name
+            WHERE M1.model_name = M.model_name);
