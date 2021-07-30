@@ -1,0 +1,88 @@
+USE GuitarOwnership;
+USE GuitarOwnership;
+SELECT TIMESTAMPDIFF(YEAR, birthdate, CURDATE()) AS Age, first_name, last_name 
+    FROM Owners 
+    ORDER BY Age ASC, last_name ASC, first_name ASC;
+    
+SELECT first_name, last_name FROM Owners ORDER BY birthdate DESC;
+
+SELECT * FROM Models;
+SELECT COUNT(DISTINCT model_name) FROM Models;
+
+SELECT DISTINCT(model_name) FROM Models;
+
+SELECT SUM(price) FROM CustomerGuitar AS CG;
+
+SELECT DISTINCT(model_name) FROM Models as Mo
+    INNER JOIN Manufacturers AS Man
+        ON Mo.Manufacturer_id = Man.Manufacturer_id
+            WHERE manufacturer_name = 'Reputation';
+SELECT * FROM Guitar_Types;
+SELECT ma.manufacturer_name, mo.model_name, g.guitar_type
+    FROM Manufacturers AS ma
+        INNER JOIN Models AS mo
+            ON ma.manufacturer_id = mo.manufacturer_id
+                INNER JOIN Guitar_Types AS g
+                    ON mo.guitar_type_id = g.guitar_type_id;
+
+                    
+SELECT 
+  O.first_name, 
+  O.last_name, 
+  Ma.manufacturer_name, 
+  M.model_name, 
+  GT.guitar_type, 
+  CG.price FROM Owners AS O 
+    INNER JOIN CustomerGuitar AS CG
+      ON O.owner_id=CG.owner_id
+    INNER JOIN Guitars AS G
+      ON CG.guitar_id=G.guitar_id
+    INNER JOIN Models AS M
+      ON G.model_name = M.model_name
+    INNER JOIN Manufacturers AS Ma
+      ON M.manufacturer_id = Ma.manufacturer_id
+    INNER JOIN Guitar_Types AS GT
+        ON GT.guitar_type_id = M.guitar_type_id;
+        
+SELECT * FROM Owners
+    ORDER BY birthdate;
+    
+SELECT first_name, last_name                    
+    FROM Owners 
+        WHERE birthdate = (SELECT MIN(birthdate) FROM Owners);
+        
+SELECT o.first_name, o.last_name
+    FROM Owners AS o
+        INNER JOIN CustomerGuitar AS cg
+            ON o.owner_id = cg.owner_id
+                WHERE price = (SELECT MAX(price) FROM CustomerGuitar);
+                
+#Which dealer sold the guitar with the highest price? 
+#Give me the dealer name and dealer city.
+#(hint: This time, you should try to use one query.)
+
+USE GuitarOwnership;
+SELECT d.dealer, d.dealer_city 
+    FROM Dealers AS d
+        INNER JOIN CustomerGuitar AS c
+            ON c.dealer_id = d.dealer_id
+                WHERE price = (SELECT MAX(price) FROM CustomerGuitar);
+
+
+#Who bought the cheapest guitar? 
+#I need that person’s first and last name, the dealer’s name and city, 
+#and the price of the guitar. 
+
+SELECT o.first_name, o.last_name, d.dealer, d.dealer_city, c.price
+    FROM Owners AS o
+        INNER JOIN CustomerGuitar AS c
+            ON o.owner_id = c.owner_id
+                INNER JOIN Dealers AS d
+                    ON d.dealer_id = c.dealer_id
+                        WHERE price = (SELECT MIN(price) FROM CustomerGuitar);
+
+SELECT g.model_name, c.price
+    FROM CustomerGuitar AS c
+        INNER JOIN Guitars AS g
+            ON g.guitar_id = c.guitar_id
+                WHERE price = (SELECT MAX(price) FROM CustomerGuitar);
